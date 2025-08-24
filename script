@@ -1,0 +1,234 @@
+-- 🌸 Modern Grow a Garden Hub UI
+-- Smooth Animations | Theme Toggle | Functional Tabs
+-- Attach your loadstring scripts in indicated sections
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- // UI Colors
+local LightTheme = {
+	Background = Color3.fromRGB(240, 240, 240),
+	Header = Color3.fromRGB(200, 230, 200),
+	Button = Color3.fromRGB(210, 240, 210),
+	Text = Color3.fromRGB(50, 70, 50)
+}
+
+local DarkTheme = {
+	Background = Color3.fromRGB(30, 30, 30),
+	Header = Color3.fromRGB(40, 60, 40),
+	Button = Color3.fromRGB(60, 90, 60),
+	Text = Color3.fromRGB(220, 220, 220)
+}
+
+local Theme = LightTheme
+
+-- // Screen GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ModernHub"
+ScreenGui.Parent = playerGui
+ScreenGui.ResetOnSpawn = false
+
+-- // Main Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 380, 0, 240)
+MainFrame.Position = UDim2.new(0.5, -190, 0.5, -120)
+MainFrame.BackgroundColor3 = Theme.Background
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner", MainFrame)
+UICorner.CornerRadius = UDim.new(0, 14)
+
+-- // Header
+local Header = Instance.new("Frame")
+Header.Parent = MainFrame
+Header.Size = UDim2.new(1, 0, 0, 40)
+Header.BackgroundColor3 = Theme.Header
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 14)
+
+local Title = Instance.new("TextLabel")
+Title.Parent = Header
+Title.Size = UDim2.new(1, -40, 1, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.Text = "🌿 Nagumo Hub"
+Title.TextColor3 = Theme.Text
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 20
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Close Button
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Parent = Header
+CloseBtn.Size = UDim2.new(0, 28, 0, 28)
+CloseBtn.Position = UDim2.new(1, -35, 0.5, -14)
+CloseBtn.Text = "X"
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 18
+CloseBtn.TextColor3 = Theme.Text
+CloseBtn.BackgroundColor3 = Theme.Button
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
+
+CloseBtn.MouseEnter:Connect(function()
+	TweenService:Create(CloseBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 120, 120)}):Play()
+end)
+CloseBtn.MouseLeave:Connect(function()
+	TweenService:Create(CloseBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Button}):Play()
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+	ScreenGui:Destroy()
+end)
+
+-- // Tabs
+local TabsFrame = Instance.new("Frame")
+TabsFrame.Parent = MainFrame
+TabsFrame.Size = UDim2.new(1, 0, 0, 35)
+TabsFrame.Position = UDim2.new(0, 0, 0, 45)
+TabsFrame.BackgroundTransparency = 1
+
+local TabNames = {"Spawner", "AutoMiddle", "ESP Eggs", "Settings"}
+local ActiveTab = nil
+
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Parent = MainFrame
+ContentFrame.Size = UDim2.new(1, -20, 1, -90)
+ContentFrame.Position = UDim2.new(0, 10, 0, 85)
+ContentFrame.BackgroundTransparency = 1
+
+-- Smooth Fade Function
+local function FadeIn(frame)
+	frame.BackgroundTransparency = 1
+	for _, child in ipairs(frame:GetChildren()) do
+		if child:IsA("TextButton") or child:IsA("TextLabel") then
+			child.TextTransparency = 1
+		end
+	end
+	frame.Visible = true
+	TweenService:Create(frame, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+	for _, child in ipairs(frame:GetChildren()) do
+		if child:IsA("TextButton") or child:IsA("TextLabel") then
+			TweenService:Create(child, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+		end
+	end
+end
+
+local function clearContent()
+	for _, v in pairs(ContentFrame:GetChildren()) do
+		v:Destroy()
+	end
+end
+
+local function CreateTabButton(name, index)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0, 90, 0, 30)
+	btn.Position = UDim2.new(0, (index-1)*95 + 10, 0, 0)
+	btn.Text = name
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 14
+	btn.TextColor3 = Theme.Text
+	btn.BackgroundColor3 = Theme.Button
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+	btn.Parent = TabsFrame
+
+	btn.MouseEnter:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(140, 200, 140)}):Play()
+	end)
+	btn.MouseLeave:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Button}):Play()
+	end)
+
+	btn.MouseButton1Click:Connect(function()
+		ActiveTab = name
+		clearContent()
+		local frame = Instance.new("Frame", ContentFrame)
+		frame.Size = UDim2.new(1, 0, 1, 0)
+		frame.BackgroundTransparency = 1
+		frame.Visible = false
+
+		if name == "Spawner" then
+			local button = Instance.new("TextButton", frame)
+			button.Size = UDim2.new(1, -20, 0, 40)
+			button.Position = UDim2.new(0, 10, 0, 20)
+			button.Text = "Pet Spawner"
+			button.Font = Enum.Font.GothamBold
+			button.TextSize = 16
+			button.TextColor3 = Theme.Text
+			button.BackgroundColor3 = Theme.Button
+			Instance.new("UICorner", button).CornerRadius = UDim.new(0, 8)
+
+			button.MouseButton1Click:Connect(function()
+				loadstring(game:HttpGet("https://raw.githubusercontent.com/veryimportantrr/x/refs/heads/main/gag_visual.lua", true))("discord.gg/csxu2nCkw9") -- Replace with your script
+			end)
+
+		elseif name == "AutoMiddle" then
+			local button = Instance.new("TextButton", frame)
+			button.Size = UDim2.new(1, -20, 0, 40)
+			button.Position = UDim2.new(0, 10, 0, 20)
+			button.Text = "Auto Middle"
+			button.Font = Enum.Font.GothamBold
+			button.TextSize = 16
+			button.TextColor3 = Theme.Text
+			button.BackgroundColor3 = Theme.Button
+			Instance.new("UICorner", button).CornerRadius = UDim.new(0, 8)
+
+			button.MouseButton1Click:Connect(function()
+				loadstring("print('Auto Middle Activated')")() -- Replace with your script
+			end)
+
+		elseif name == "ESP Eggs" then
+			local toggle = Instance.new("TextButton", frame)
+			toggle.Size = UDim2.new(1, -20, 0, 40)
+			toggle.Position = UDim2.new(0, 10, 0, 20)
+			toggle.Text = "ESP: OFF"
+			toggle.Font = Enum.Font.GothamBold
+			toggle.TextSize = 16
+			toggle.TextColor3 = Theme.Text
+			toggle.BackgroundColor3 = Theme.Button
+			Instance.new("UICorner", toggle).CornerRadius = UDim.new(0, 8)
+
+			local enabled = false
+			toggle.MouseButton1Click:Connect(function()
+				enabled = not enabled
+				toggle.Text = enabled and "ESP: ON" or "ESP: OFF"
+				if enabled then
+					loadstring("print('ESP Enabled')")()
+				else
+					loadstring("print('ESP Disabled')")()
+				end
+			end)
+
+		elseif name == "Settings" then
+			local themeToggle = Instance.new("TextButton", frame)
+			themeToggle.Size = UDim2.new(1, -20, 0, 40)
+			themeToggle.Position = UDim2.new(0, 10, 0, 20)
+			themeToggle.Text = "Theme: Light"
+			themeToggle.Font = Enum.Font.GothamBold
+			themeToggle.TextSize = 16
+			themeToggle.TextColor3 = Theme.Text
+			themeToggle.BackgroundColor3 = Theme.Button
+			Instance.new("UICorner", themeToggle).CornerRadius = UDim.new(0, 8)
+
+			local light = true
+			themeToggle.MouseButton1Click:Connect(function()
+				light = not light
+				Theme = light and LightTheme or DarkTheme
+				themeToggle.Text = light and "Theme: Light" or "Theme: Dark"
+				MainFrame.BackgroundColor3 = Theme.Background
+				Header.BackgroundColor3 = Theme.Header
+				Title.TextColor3 = Theme.Text
+			end)
+		end
+
+		FadeIn(frame)
+	end)
+end
+
+for i, name in ipairs(TabNames) do
+	CreateTabButton(name, i)
+end
